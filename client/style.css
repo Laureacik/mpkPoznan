@@ -1,0 +1,179 @@
+*{
+    --color1: #222831;
+    --color2: #31363F;
+    --color3: #76ABAE;
+    --color4: #EEEEEE;
+
+    --color1:#000000;
+    --color2:#282A3A;
+    --color3:#735F32;
+    --color4:#C69749;
+
+    font-family: "Roboto", sans-serif;
+}
+body {
+    margin: 0;
+    background-color: var(--color1);
+    overflow: hidden;
+}
+
+header {
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  color: var(--color4);
+}
+
+div.stop-name {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 0.15fr 0.7fr 0.15fr;
+  align-items: center;
+  min-width: 0;
+}
+
+div.stop-name h1 {
+  text-align: center;
+  color: var(--color4);
+}
+
+button.arrow{
+    width: 4.5rem;
+    height: 4.5rem;
+    padding: 0;
+
+    background-color: var(--color2);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 50%;
+}
+button.config{
+  background-color: inherit;
+  border: 0;
+}
+
+div.stop-name h1{
+  font-size: 6.5em;
+  margin: 0;
+}
+
+div.stop-name i {
+    font-size: 4.5em;
+    color: var(--color4);
+}
+
+div.stop-name button:first-child {
+  justify-self: end;
+}
+
+div.stop-name button:last-child {
+  justify-self: start;
+}
+
+div.time {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+div.time h1 {
+  margin: 0;
+  font-size: 6.5em;
+}
+
+div.time h1 span.hidden-colon {
+  visibility: hidden;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+aside{
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+
+    padding: 0 0.4rem;
+}
+#departuresTable td{
+    font-size: 4em;
+    padding: 0.6rem;
+    color: var(--color4)
+}
+
+#departuresTable tr>td:nth-child(1){
+    width: 3ch;
+    text-align: right;
+}
+#departuresTable tr>td:nth-child(2){
+    text-align: left;
+}
+#departuresTable tr>td:nth-child(3){
+    width: 6ch;
+    text-align: left;
+}
+
+#configTable td{
+  border: 1px solid wheat;
+  text-align: center;
+  font-size: 2rem;
+  padding: 0.5em 0;
+}
+
+#configTable td:nth-child(1){
+  width: 4%;
+}
+
+#configTable td:nth-child(2){
+  width: 32%;
+}
+#configTable td:nth-child(4){
+  width: 32%;
+}
+
+#configTable td:nth-child(5){
+  width: 4%;
+  text-align: center;
+  
+}
+
+#configTable h3 {
+  margin: 0;
+  color: var(--color4);
+}
+
+#configTable button.edit{
+  border-radius:2em;
+  border: 0;
+  background-color: var(--color2);
+}
+#configTable button.edit p{
+  height: 2em;
+  font-size: 2rem;
+  line-height: 2em;
+  text-align: center;
+  margin: 0.3rem;
+  color: var(--color4);
+}
+#configTable button.remove{
+  background-color: var(--color2);
+  border: 0;
+  border-radius: 50%;
+
+  height: 2rem;
+  width: 2rem;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+#configTable button i{
+  color: var(--color4);
+  font-size: 2rem;
+}
