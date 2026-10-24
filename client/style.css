@@ -1,24 +1,94 @@
-*{
-    --color1: #222831;
-    --color2: #31363F;
-    --color3: #76ABAE;
-    --color4: #EEEEEE;
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
 
-    --color1:#000000;
-    --color2:#282A3A;
-    --color3:#735F32;
-    --color4:#C69749;
-
-    font-family: "Roboto", sans-serif;
+:root {
+  --color1: #F7FBFD;
+  --color2: #D6E6EF;
+  --color4: #2A3E4B;
 }
+
+body.dark-mode {
+  --color1: #000000;
+  --color2: #282A3A;
+  --color4: #C69749;
+}
+
 body {
-    margin: 0;
-    background-color: var(--color1);
-    overflow: hidden;
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  background-color: var(--color1);
+  overflow:scroll
 }
+
+div.hidden-tabs{
+  display: none
+}
+
+div.editStops{
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+div.stopCard{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+
+  background-color: var(--color1);
+  box-shadow: rgba(149, 157, 165, 0.4) 0px 12px 48px 0px;
+
+  width: 16em;
+  height: 16em;
+  padding: 1em;
+  margin: 1em;
+  border-radius: 3em;
+
+  color: var(--color4);
+}
+
+div.stopCard div{
+  height: 30%;
+}
+div.stopCard div.upper{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+div.stopCard div.center{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+div.stopCard div.lower{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+div.stopCard div.upper span.stopName{
+  font-size: 4em;
+  font-family: "Oswald", sans-serif;
+  margin: 0;
+}
+
+div.stopCard i{
+  font-size: 6em;
+}
+
+div.stopCard span.lines{
+  font-size: 1.5em;
+  text-align: center;
+}
+
+
+
 
 header {
   width: 100vw;
+  
   display: flex;
   align-items: center;
   color: var(--color4);
@@ -75,6 +145,7 @@ div.stop-name button:last-child {
 }
 
 div.time {
+  display: none;
   margin-left: auto;
   white-space: nowrap;
 }
@@ -88,92 +159,146 @@ div.time h1 span.hidden-colon {
   visibility: hidden;
 }
 
-table{
-    width: 100%;
-    border-collapse: collapse;
+
+
+
+
+div.departureCard {
+  width: 95vw;
+  margin: 1em auto;
+  border-radius: 2em;
+  box-shadow: rgba(149, 157, 165, 0.4) 0px 12px 48px 0px
 }
 
-aside{
-    display: none;
-    flex-direction: column;
-    justify-content: space-around;
-
-    padding: 0 0.4rem;
+div.departureCard div.upperRow{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
-#departuresTable td{
-    font-size: 4em;
-    padding: 0.6rem;
-    color: var(--color4)
-}
-
-#departuresTable tr>td:nth-child(1){
-    width: 3ch;
-    text-align: right;
-}
-#departuresTable tr>td:nth-child(2){
-    text-align: left;
-}
-#departuresTable tr>td:nth-child(3){
-    width: 6ch;
-    text-align: left;
-}
-
-#configTable td{
-  border: 1px solid wheat;
-  text-align: center;
-  font-size: 2rem;
-  padding: 0.5em 0;
-}
-
-#configTable td:nth-child(1){
-  width: 4%;
-}
-
-#configTable td:nth-child(2){
-  width: 32%;
-}
-#configTable td:nth-child(4){
-  width: 32%;
-}
-
-#configTable td:nth-child(5){
-  width: 4%;
-  text-align: center;
-  
-}
-
-#configTable h3 {
-  margin: 0;
-  color: var(--color4);
-}
-
-#configTable button.edit{
-  border-radius:2em;
-  border: 0;
-  background-color: var(--color2);
-}
-#configTable button.edit p{
-  height: 2em;
-  font-size: 2rem;
-  line-height: 2em;
-  text-align: center;
-  margin: 0.3rem;
-  color: var(--color4);
-}
-#configTable button.remove{
-  background-color: var(--color2);
-  border: 0;
-  border-radius: 50%;
-
-  height: 2rem;
-  width: 2rem;
-
-  display: inline-flex;
-  justify-content: center;
+div.departureCard div.lowerRow{
+  height: 2.7em;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  
+  background-color: var(--color2);
+  border-radius: 0 0 2em 2em;
 }
-#configTable button i{
+
+div.departureCard span{
+  padding: 0.6rem;
+  color: var(--color4)
+}
+
+div.departureCard div.upperRow span{
+  font-size: 4em;
+  font-family: "Oswald", sans-serif; 
+}
+
+div.departureCard div.lowerRow span{
+  font-size: 1.5em;
+}
+
+
+div.departureCard div.lowerRow svg{
+  height: 4.5rem;
+  padding: 0.6rem;
+  fill: var(--color4);
+}
+
+div.departureCard div.lowerRow span.delayed{
+  color: tomato;
+}
+
+
+
+
+
+footer{
+  position: fixed;
+  bottom: 0;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  justify-content:space-evenly;
+  align-items: center;
+  background-color: var(--color2);
+}
+
+footer div{
+  width: 27%;
+  text-align: center;
+}
+footer div svg{
+  margin: 0.6rem;
+  fill: var(--color4)
+}
+footer div p{
+  margin: 0.6rem;
   color: var(--color4);
-  font-size: 2rem;
+}
+footer div button{
+  margin: 0;
+  padding: 0;
+  background-color: initial;
+  border: none;
+}
+
+@media screen and (min-width: 870px){
+  div.time{
+    display: block;
+  }
+
+  div.departureCard div.upperRow span.endStop{
+    display: block;
+  }
+  div.departureCard div.lowerRow{
+    display: none;
+  }
+}
+
+dialog#editStopDialog{
+  width: min(90vw, 40em);
+  padding: 2em;
+  border: none;
+  border-radius: 3em;
+
+  background-color: var(--color1);
+  color: var(--color4);
+  box-shadow: rgba(149, 157, 165, 0.4) 0px 12px 48px 0px;
+}
+
+dialog#editStopDialog input#startStopInput{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6em;
+  font-size: 1.2em;
+  border: 2px solid var(--color4);
+  background: transparent;
+  color: inherit;
+}
+
+dialog#editStopDialog .destinationGroups{
+  overflow: auto;
+}
+
+fieldset.destGroup{
+  margin: 1.5em 0 0 0;
+  padding: 0 0 0.8em 0;
+  border: none;
+  border-bottom: 1px solid var(--color4);
+}
+
+fieldset.destGroup legend{
+  padding: 0;
+  font-size: 1.2em;
+}
+
+fieldset.destGroup label{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-right: 1.2em;
+  font-size: 1.1em;
 }

@@ -11,17 +11,6 @@ let {
 } = require("./data");
 
 
-const days = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday"
-];
-
-
 function scheduleGtfsUpdate() {
   const now = new Date();
 
@@ -53,12 +42,10 @@ function scheduleGtfsUpdate() {
 
   }, timeUntilMidnight);
 }
-
+//updateGtfs();
 scheduleGtfsUpdate();
 
 const currentDate = new Date();
-const currentTime = currentDate.toTimeString().slice(0, 8);
-const currentDay = days[currentDate.getDay()];
 
 function normTime(time) {
   let [h, m, s] = time.split(":").map(Number);
@@ -70,7 +57,6 @@ function timeToMin(time) {
   let [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 } //czas na minuty, uzywane do obliczania roznicy czasu
-
 
 function calcTime(time, delay) {
   let [h, m, s] = time.split(":").map(Number);
@@ -95,7 +81,6 @@ function czas(depTime, curTime, delay = 0) {
   return Math.floor(diffSeconds / 60);
 }
 
-
 function getActiveServiceIds() {
   const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
@@ -119,8 +104,34 @@ const profiles = [
   {
     name: "Sikorskiego",
     trackedTrips: []
+  },
+  {
+    name: "Górczyn",
+    trackedTrips: []
   }
 ];
+
+let finalStopMap = new Map();
+function buildFinalStopMap() {
+  finalStopMap = new Map();
+
+  stopTimesData.forEach(row => {
+    const tripId = row.trip_id;
+    const seq = Number(row.stop_sequence);
+
+    const existing = finalStopMap.get(tripId);
+
+    if (!existing || seq > existing.stopSequence) {
+      finalStopMap.set(tripId, {
+        stopId: row.stop_id,
+        stopSequence: seq,
+        arrivalTime: row.arrival_time
+      });
+    }
+  });
+
+  console.log(`Zbudowano mapę. Size: ${finalStopMap.size}`);
+}
 
 const trackRoute = (profileIndex, stopName, line, course) => {
   const trackedTrips = profiles[profileIndex].trackedTrips
@@ -138,6 +149,7 @@ const trackRoute = (profileIndex, stopName, line, course) => {
     .filter(row => matchingStops.includes(row.stop_id))
     .filter(row => matchingTrips.includes(row.trip_id));
 
+  
   matchingStopTimes.forEach(row => {
     const alreadyTracked = trackedTrips.some(item =>
       item.tripId == row.trip_id &&
@@ -151,6 +163,7 @@ const trackRoute = (profileIndex, stopName, line, course) => {
       });
     }
   });
+  //console.log(trackedTrips);
 };
 
 const getDelay = async (trip, feed) => {
@@ -172,7 +185,7 @@ const getDelay = async (trip, feed) => {
     else return 0;
 }
 
-const showDepartures = async (qty = 3, trips, feed) => {
+const showDepartures = async (qty = 5, trips, feed) => {
   const currentDate = new Date();
   const currentTime = currentDate.toTimeString().slice(0, 8);
   const activeServiceIds = getActiveServiceIds();
@@ -191,7 +204,8 @@ const showDepartures = async (qty = 3, trips, feed) => {
     })
     .map(async d => { 
     const trip = tripsData.find(row => row.trip_id == d.trip_id);
-    const delay = await getDelay(d.trip_id, feed)
+    const delay = await getDelay(d.trip_id, feed);
+    const finalStop = finalStopMap.get(d.trip_id);
     return { 
       routeId: trip.route_id, 
       headsign: trip.trip_headsign, 
@@ -200,26 +214,20 @@ const showDepartures = async (qty = 3, trips, feed) => {
 
       compTime: calcTime(d.departure_time, delay),
       rawTime: d.departure_time,
-      delay: delay
+      delay: delay,
+      arrTime: normTime(calcTime(finalStop.arrivalTime, delay))
     } }))
     
     return stopTimes
     .sort((a, b) => a.compTime.localeCompare(b.compTime))
     .filter(dep => dep.compTime > currentTime)
-    .slice(0, qty); 
+    .slice(0, qty);
 };
 
-async function main() {
-  const feed = await downloadRT();
 
-  trackRoute("Luboń/Unijna","610","Górczyn PKM")
-  trackRoute("Luboń/Unijna","616","Górczyn PKM")
-  trackRoute("Luboń/Unijna","702","Górczyn PKM")
-  console.log(await showDepartures(4, trackedTrips, feed))
-}
 
 //main()
-
+buildFinalStopMap();
 
 module.exports = {
   trackRoute,

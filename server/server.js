@@ -9,7 +9,9 @@ const {
 
 const {
   downloadRT,
-  downloadGtfs
+  stopsData,
+  stopTimesData,
+  tripsData
 } = require("./data");
 
 const app = express();
@@ -17,41 +19,70 @@ const PORT = 3000;
 
 app.use(express.static(path.join(__dirname, "../client")));
 
-// ===============================
-// POBIERANIE GTFS
-// ===============================
 
-/*function scheduleGtfsUpdate() {
-  const now = new Date();
+const stopNames = [...new Set(stopsData.map(s => s.stop_name))]
+  .sort((a, b) => a.localeCompare(b, "pl"));
+const stopNameSet = new Set(stopNames);
 
-  const nextMidnight = new Date(now);
-  nextMidnight.setHours(24, 0, 0, 0);
+const routesCache = new Map(); // nazwa przystanku -> gotowy wynik
 
-  const timeUntilMidnight = nextMidnight - now;
 
-  console.log(
-    `GTFS: zaplanowano aktualizację na ${nextMidnight.toLocaleString("pl-PL")}`
+function getRoutesForStopNew(name) {
+  const stopIds = new Set(
+    stopsData.filter(s => s.stop_name == name).map(s => s.stop_id)
   );
 
-  setTimeout(async () => {
-    try {
-      await downloadGtfs();
-    } catch (err) {
-      console.error("Błąd aktualizacji GTFS:", err);
-    }
+  // trip_id -> stop_id (na którym słupku zatrzymuje się ten kurs)
+  const tripToStop = new Map();
+  stopTimesData.forEach(d => {
+    if (stopIds.has(d.stop_id)) tripToStop.set(d.trip_id, d.stop_id);
+  });
 
-    setInterval(async () => {
-      try {
-        await downloadGtfs();
-      } catch (err) {
-        console.error("Błąd aktualizacji GTFS:", err);
+  const grouped = {};
+
+  tripsData.forEach(d => {
+    const stopId = tripToStop.get(d.trip_id);
+    if (stopId === undefined) return;          // kurs nie jedzie przez ten przystanek
+
+    const line = Number(d.route_id);
+    if (line >= 200 && line <= 299){
+      if(!grouped["Nocne linie"]){
+        //grouped["Nocne linie"] = { stop_id: "Nocne linie", headsigns: [], lines: [] };
       }
-    }, 24 * 60 * 60 * 1000);
+      return
+    };    // nocne na razie pomijamy
 
-  }, timeUntilMidnight);
+    if (!grouped[stopId]) {
+      grouped[stopId] = { stop_id: stopId, headsigns: [], lines: [] };
+    }
+    if (!grouped[stopId].headsigns.includes(d.trip_headsign) && d.trip_id.search("\\^[A-Z]*[,+]*[FGS]")<0) {
+      grouped[stopId].headsigns.push(d.trip_headsign);
+    }
+    if (!grouped[stopId].lines.includes(d.route_id)) {
+      grouped[stopId].lines.push(d.route_id);
+    }
+  });
+
+  return Object.values(grouped);
 }
+app.get("/api/stops", (req, res) => {
+  res.json(stopNames);
+});
 
-scheduleGtfsUpdate();*/
+app.get("/api/stops/routes", (req, res) => {
+  const name = req.query.name;
+
+  if (!name || !stopNameSet.has(name)) {
+    return res.status(400).json({ error: "Nieznany przystanek" });
+  }
+
+  res.json(getRoutesForStopNew(name));
+});
+
+app.get("/api/schedule", (req,res) => {
+  
+})
+
 
 
 // ===============================
@@ -71,6 +102,9 @@ trackRoute(1, "Luboń/Os. Lubonianka", "701", "Górczyn PKM");
 
 // Profil 2
 trackRoute(2, "Luboń/Sikorskiego", "611", "Dębiec PKM");
+
+//Profil 3
+trackRoute(3, "Górczyn PKM", "17", "Małe Garbary");
 
 // ===============================
 // CACHE DANYCH
