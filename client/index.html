@@ -20,7 +20,7 @@
     </header>
     <main>
         <div class="tab schedule" id="schedule">
-            <div class="departureCard">
+ <!---          <div class="departureCard">
             <div class="upperRow">
                 <span class="line">702</span>
                 <span class="endStop">Górczyn PKM</span>
@@ -48,11 +48,11 @@
                 <span class="depArrTime">12:34 <i class="ti ti-arrow-narrow-right"></i> 12:59</span>
                 <span class="status">Na czas</span>
             </div>
+        </div>-->  
         </div>
-        </div>
-        
+       
         <div class="tab editStops hidden-tabs" id="editStops">
-
+<!--
             <div class="stopCard">
                 <div class="upper">
                     <span class="stopName">Unijna</span>
@@ -67,10 +67,10 @@
                         <button class="deleteStopCard">Usuń</button>
                     </div>
                 </div>
-            </div>
+            </div>-->
             <div class="stopCard">
                 <div class="upper">
-                    <span>Utwórz</span>
+                    <span class="new">Utwórz</span>
                 </div>
                 <div class="center">
                     <button class="newStop">
@@ -78,7 +78,7 @@
                     </button>
                 </div>
                 <div class="lower">
-                    <span>Nowy</span>
+                    <span class="new">Nowy</span>
                 </div>
             </div>
 <!--
@@ -157,22 +157,7 @@
         <input id="startStopInput" list="stopNamesList" placeholder="Wybierz przystanek początkowy" autocomplete="off">
         <datalist id="stopNamesList"></datalist>
 
-        <div id="destinationGroups">
-<!--
-      <fieldset class="destGroup">
-                <legend>Górczyn PKM</legend>
-                <label><input type="checkbox" value="610"> 610</label>
-                <label><input type="checkbox" value="616"> 616</label>
-                <label><input type="checkbox" value="702"> 702</label>
-            </fieldset>
-
-            <fieldset class="destGroup">
-                <legend>Dębiec PKM</legend>
-                <label><input type="checkbox" value="611"> 611</label>
-                <label><input type="checkbox" value="610"> 610</label>
-            </fieldset>      
--->
-        </div>
+        <div id="destinationGroups"></div>
 
         <button id="saveStop">Zapisz</button>
         <button id="cancel">Anuluj</button>

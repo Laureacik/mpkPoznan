@@ -185,40 +185,69 @@ const getDelay = async (trip, feed) => {
     else return 0;
 }
 
-const showDepartures = async (qty = 5, trips, feed) => {
+const tripById = new Map(tripsData.map(t => [t.trip_id, t]));
+
+const buildTrackedTrips = (stopName, lines) => {
+  const stopIds = new Set(
+    stopsData.filter(row => row.stop_name == stopName).map(row => row.stop_id)
+  );
+
+  // linia -> zbiór wybranych kierunków
+  const wanted = new Map(lines.map(l => [String(l.line), new Set(l.headsigns)]));
+
+  const matchingTrips = new Set(
+    tripsData
+      .filter(row => {
+        const heads = wanted.get(String(row.route_id));
+        return heads && heads.has(row.trip_headsign);
+      })
+      .map(row => row.trip_id)
+  );
+
+  const seen = new Set();
+
+  return stopTimesData.filter(row => {
+    if (!stopIds.has(row.stop_id) || !matchingTrips.has(row.trip_id)) return false;
+
+    const key = `${row.trip_id}|${row.stop_id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const showDepartures = async (qty = 5, rows, feed) => {
   const currentDate = new Date();
   const currentTime = currentDate.toTimeString().slice(0, 8);
-  const activeServiceIds = getActiveServiceIds();
+  const activeServiceIds = new Set(getActiveServiceIds());
 
   const stopTimes = await Promise.all(
-  stopTimesData
-    .filter(row =>
-      trips.some(trip =>
-        trip.tripId == row.trip_id &&
-        trip.stopId == row.stop_id
-      )
-    )
-    .filter(row => {
-    const trip = tripsData.find(t => t.trip_id == row.trip_id);
-    return trip && activeServiceIds.includes(trip.service_id);
-    })
-    .map(async d => { 
-    const trip = tripsData.find(row => row.trip_id == d.trip_id);
-    const delay = await getDelay(d.trip_id, feed);
-    const finalStop = finalStopMap.get(d.trip_id);
-    return { 
-      routeId: trip.route_id, 
-      headsign: trip.trip_headsign, 
-      timeToDep: czas(d.departure_time,currentTime, delay),
-      depTime: normTime(calcTime(d.departure_time, delay)),
+    rows
+      .filter(row => {
+        const trip = tripById.get(row.trip_id);
+        return trip && activeServiceIds.has(trip.service_id);
+      })
+      .map(async d => {
+        const trip = tripById.get(d.trip_id);
+        const delay = await getDelay(d.trip_id, feed);
+        const finalStop = finalStopMap.get(d.trip_id);
+        return {
+          routeId: trip.route_id,
+          headsign: trip.trip_headsign,
+          timeToDep: czas(d.departure_time, currentTime, delay),
+          depTime: normTime(calcTime(d.departure_time, delay)),
 
-      compTime: calcTime(d.departure_time, delay),
-      rawTime: d.departure_time,
-      delay: delay,
-      arrTime: normTime(calcTime(finalStop.arrivalTime, delay))
-    } }))
-    
-    return stopTimes
+          compTime: calcTime(d.departure_time, delay),
+          rawTime: d.departure_time,
+          delay: delay,
+          arrTime: finalStop
+            ? normTime(calcTime(finalStop.arrivalTime, delay))
+            : "--:--:--"   // brak danych o ostatnim przystanku
+        };
+      })
+  );
+
+  return stopTimes
     .sort((a, b) => a.compTime.localeCompare(b.compTime))
     .filter(dep => dep.compTime > currentTime)
     .slice(0, qty);
@@ -232,5 +261,6 @@ buildFinalStopMap();
 module.exports = {
   trackRoute,
   showDepartures,
-  profiles
+  profiles,
+  buildTrackedTrips
 };

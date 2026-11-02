@@ -14,17 +14,22 @@ body.dark-mode {
 
 body {
   font-family: "Roboto", sans-serif;
+  width: 100%;
   margin: 0;
   background-color: var(--color1);
-  overflow:scroll
 }
 
 div.hidden-tabs{
   display: none
 }
 
+div.schedule{
+  flex-direction: column;
+}
+
 div.editStops{
   display: none;
+  flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -68,14 +73,22 @@ div.stopCard div.lower{
   justify-content: flex-end;
   align-items: center;
 }
+div.stopCard div span.new{
+  font-size: 3.5em;
+  font-family: "Oswald", sans-serif;
+}
 div.stopCard div.upper span.stopName{
-  font-size: 4em;
+  font-size: 3.5em;
   font-family: "Oswald", sans-serif;
   margin: 0;
 }
-
+div.stopCard .center button{
+  background-color: none;
+  border: none;
+}
 div.stopCard i{
-  font-size: 6em;
+  font-size: 5.5em;
+  color: var(--color4);
 }
 
 div.stopCard span.lines{
@@ -273,32 +286,53 @@ dialog#editStopDialog input#startStopInput{
   width: 100%;
   box-sizing: border-box;
   padding: 0.6em;
-  font-size: 1.2em;
+  font-size: 1.5em;
   border: 2px solid var(--color4);
   background: transparent;
-  color: inherit;
+  color: var(--color4);
 }
 
-dialog#editStopDialog .destinationGroups{
+
+
+dialog#editStopDialog #destinationGroups{
   overflow: auto;
 }
 
-fieldset.destGroup{
-  margin: 1.5em 0 0 0;
-  padding: 0 0 0.8em 0;
-  border: none;
-  border-bottom: 1px solid var(--color4);
+
+dialog#editStopDialog #destinationGroups .linesBlock{
+  color: var(--color4);
+  font-size: 1.6em;
 }
 
-fieldset.destGroup legend{
-  padding: 0;
-  font-size: 1.2em;
-}
+dialog#editStopDialog #destinationGroups .linesBlock .line-block label{
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
 
-fieldset.destGroup label{
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.4em;
-  margin-right: 1.2em;
-  font-size: 1.1em;
+}
+
+
+dialog#editStopDialog #destinationGroups .linesBlock .line-block label svg{
+  height: 1.6em;
+  padding: 0.2rem;
+  fill: var(--color4);
+}
+
+dialog#editStopDialog #destinationGroups .linesBlock .routes-block{
+  display: none;
+  padding: 0 0.5em;
+  font-family: "Oswald", sans-serif;
+}
+
+dialog#editStopDialog #destinationGroups .linesBlock .routes-block label{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+
+dialog#editStopDialog #destinationGroups .linesBlock:has(.line-block input:checked) .routes-block{
+  display: block;
 }

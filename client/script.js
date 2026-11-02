@@ -4,6 +4,8 @@ const STORAGE_KEY = "mpkState";
 let chosenProfile = 0;
 let state = loadState();
 if (!state) state = defaultState();
+// odrzuć stare wpisy w poprzednim formacie (bez listy linii)
+state.profiles = (state.profiles || []).filter(p => Array.isArray(p.lines));
 
 
 const svgBus = `
@@ -23,6 +25,7 @@ const svgBus = `
         M392.533,204.8v34.133H307.2V204.8H392.533z M290.133,204.8v34.133H204.8V204.8H290.133z M187.733,204.8v34.133h-76.8V204.8
         H187.733z M93.867,204.8v76.8h-25.6v-76.8H93.867z"/>
   </g>`;
+  
 const svgTram = `
   <g>
     <path d="M502.927,282.862l-21.273-56.727h4.753c4.719,0,8.533-3.823,8.533-8.533s-3.814-8.533-8.533-8.533h-16.87
@@ -54,7 +57,12 @@ const svgTram = `
       h494.909c4.719,0,8.533-3.823,8.533-8.533S508.183,379.728,503.465,379.728z"/>
   </g>`;
 
-
+let insertSvg = (line) => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 512 512");
+  svg.innerHTML = (line / 100 >= 1) ? svgBus : svgTram;
+  return svg;
+};
 
 
 function defaultState() {
@@ -81,39 +89,32 @@ function saveState(state) {
 
 
 
-let profilesData = [
-  {
-    profileName: "Profil 1",
-    departures: []
-  },
-  {
-    profileName: "Profil 2",
-    departures: []
-  },
-  {
-    profileName: "Profil 3",
-    departures: []
-  },
-  {
-    profileName: "Profil 4",
-    departures: []
-  }
-];
+let profilesData = [];
 
 
 
 async function loadProfiles() {
-try {
-  const response = await fetch("/api/profiles");
-  if (!response.ok){throw new Error(`Błąd HTTP: ${response.status}`);}
-
-  const data = await response.json();
-
-    profilesData = data;
-
+  if (state.profiles.length === 0) {
+    profilesData = [];
     renderDepartures();
-} catch(err) {
-console.error("Błąd funkcji loadProfiles:",err)}
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/departures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        profiles: state.profiles.map(p => ({ name: p.name, lines: p.lines }))
+      })
+    });
+    if (!response.ok) throw new Error(`Błąd HTTP: ${response.status}`);
+
+    profilesData = await response.json();
+    renderDepartures();
+  } catch (err) {
+    console.error("Błąd funkcji loadProfiles:", err);
+  }
 }
 
 function renderDepartures() {
@@ -121,10 +122,15 @@ function renderDepartures() {
   const header = document.querySelector(".config h1");
 
   container.innerHTML = "";
-  header.textContent = profilesData[chosenProfile].profileName;
+
+  if (chosenProfile >= profilesData.length) chosenProfile = 0;
 
   const profile = profilesData[chosenProfile];
-  if (!profile) return;
+  if (!profile) {
+    header.textContent = "Brak przystanków";
+    return;
+  }
+  header.textContent = profile.profileName.slice(profile.profileName.indexOf("/")+1);
 
   const departures = profile.departures;
 
@@ -189,12 +195,14 @@ const btnDayNight = document.querySelector("button.daynight");
 
 
 btnLeft.addEventListener("click", () => {
-  chosenProfile = (chosenProfile - 1 + 4) % 4;
+  if (!profilesData.length) return;
+  chosenProfile = (chosenProfile - 1 + profilesData.length) % profilesData.length;
   renderDepartures();
 });
 
 btnRight.addEventListener("click", () => {
-  chosenProfile = (chosenProfile + 1) % 4;
+  if (!profilesData.length) return;
+  chosenProfile = (chosenProfile + 1) % profilesData.length;
   renderDepartures();
 });
 
@@ -230,7 +238,7 @@ async function loadStopNames() {
 
 async function loadRoutes(stopName) {
   const routeListDiv = document.querySelector("#destinationGroups");
-  routeListDiv.innerHTML = "";   // wyczyść poprzednie grupy
+  routeListDiv.innerHTML = "";
 
   if (!stopName) return;
 
@@ -238,32 +246,46 @@ async function loadRoutes(stopName) {
     const response = await fetch(`/api/stops/routes?name=${encodeURIComponent(stopName)}`);
     if (!response.ok) throw new Error(`Błąd HTTP: ${response.status}`);
 
-    const routes = await response.json();
-    //routeListDiv.innerHTML=JSON.stringify(routes);
-    routes.forEach(stop => {
-      let fieldset = document.createElement("fieldset")
-      fieldset.classList = "destGroup";
-      fieldset.id = stop;
+    const lines = await response.json();
 
-      let legend = document.createElement("legend")
-      stop.headsigns.forEach(headsign => {
-        legend.textContent += `${headsign}, `;
+    lines.forEach(l => {
+      const linesBlock = document.createElement("div");
+      linesBlock.className = "linesBlock";
+      linesBlock.dataset.line = l.line;
+
+      const lineBlock = document.createElement("div");
+      lineBlock.className = "line-block";
+      lineBlock.dataset.line = l.line;
+
+      const routesBlock = document.createElement("div");
+      routesBlock.className = "routes-block";
+      routesBlock.dataset.line = l.line;
+
+      const lineLabel = document.createElement("label");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+
+      const svg = insertSvg(l.line);
+      
+      l.headsigns.forEach(headsign => {
+        const routeLabel = document.createElement("label");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = headsign;
+
+        routeLabel.appendChild(checkbox);
+        routeLabel.append(` ${headsign}`);
+        routesBlock.appendChild(routeLabel)
       })
-      legend.textContent.slice(0,-3);
-
-      stop.lines.forEach(line => {
-        let label = document.createElement("label");
-        label.textContent = line;
-
-        let checkbox = document.createElement("input");
-        checkbox.type="checkbox";
-        checkbox.value=line;
-        checkbox.checked = 1;
-        label.appendChild(checkbox);
-        fieldset.appendChild(label);
-      });
-      fieldset.appendChild(legend)
-      routeListDiv.appendChild(fieldset)
+      lineLabel.appendChild(checkbox);
+      lineLabel.appendChild(svg)
+      lineLabel.append(`${l.line}`);
+      lineBlock.appendChild(lineLabel);
+      linesBlock.appendChild(lineBlock);
+      linesBlock.appendChild(routesBlock);
+      routeListDiv.appendChild(linesBlock);
     });
   } catch (err) {
     console.error("Błąd funkcji loadRoutes:", err);
@@ -286,9 +308,6 @@ tabBtns.forEach(btn => {
 });
 
 
-let editStopCardBtns = document.querySelectorAll('div.stopCard button.editStopCard')
-let delStopCardBtns = document.querySelectorAll('div.stopCard button.deleteStopCard')
-
 const newStopBtn = document.querySelector("div.stopCard button.newStop")
 const dialog = document.querySelector("dialog")
 
@@ -297,28 +316,146 @@ const inputStopName = dialog.querySelector("input#startStopInput")
 const dialogSaveBtn = dialog.querySelector("button#saveStop")
 const dialogCancelBtn = dialog.querySelector("button#cancel")
 
+let editingId = null;   // id edytowanego profilu, null = tryb dodawania
+
 newStopBtn.addEventListener("click",() => {
   dialog.showModal();
 })
 
-dialogSaveBtn.addEventListener("click",()=>{
-  localStorage.setItem("followedLines",inputStopName.value);
-  let stops = document.querySelectorAll("dialog div#destinationGroups fieldset")
-  let followedRoutes = [];
-  stops.forEach(stop => {
-    let followedLines = Document.querySelectorAll(`${stop} input:checked`)
-    followedRoutes.push(followedLines)
-  })
+// odtwarza zapisane zaznaczenia kierunków po narysowaniu linii z serwera
+function applySavedSelection(profile) {
+  document.querySelectorAll("#destinationGroups .linesBlock").forEach(block => {
+    const saved = (profile.lines || []).find(l => l.line === block.dataset.line);
+
+    block.querySelector(".line-block input").checked = !!saved;
+
+    block.querySelectorAll(".routes-block input").forEach(cb => {
+      cb.checked = saved ? saved.headsigns.includes(cb.value) : false;
+    });
+  });
+}
+
+// zbiera zaznaczone linie i kierunki z dialogu
+function collectLines() {
+  const lines = [];
+
+  document.querySelectorAll("#destinationGroups .linesBlock").forEach(block => {
+    const lineChecked = block.querySelector(".line-block input").checked;
+    if (!lineChecked) return;
+
+    const headsigns = [...block.querySelectorAll(".routes-block input:checked")].map(cb => cb.value);
+    if (headsigns.length) {
+      lines.push({ line: block.dataset.line, headsigns });
+    }
+  });
+
+  return lines;
+}
+
+async function openEditDialog(profile) {
+  editingId = profile.id;
+  inputStopName.value = profile.name;
+
+  await loadRoutes(profile.name);   // narysuj wszystkie linie i kierunki z serwera
+  applySavedSelection(profile);     // odznacz to, czego użytkownik wcześniej nie wybrał
+
+  dialog.showModal();
+}
+
+dialogSaveBtn.addEventListener("click", () => {
+  const stopName = inputStopName.value;
+  const lines = collectLines();
+  
+
+  if (!stopName || lines.length === 0) return;   // nic do zapisania
+
+  if (editingId) {
+    const profile = state.profiles.find(p => p.id === editingId);
+    if (profile) {
+      profile.name = stopName;
+      profile.lines = lines;
+    }
+  } else {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    state.profiles.push({ id, name: stopName, lines });
+    if (!state.activeId) state.activeId = id;
+  }
+
+  saveState(state);
+  renderStopCards();
+  loadProfiles();
   dialog.close();
-})
+});
 
 dialogCancelBtn.addEventListener("click",()=>{
   dialog.close();
 })
 
+// czyści dialog przy każdym zamknięciu (Zapisz, Anuluj, Esc)
+dialog.addEventListener("close", () => {
+  editingId = null;
+  inputStopName.value = "";
+  document.querySelector("#destinationGroups").innerHTML = "";
+});
+
+function renderStopCards() {
+  const newCard = newStopBtn.closest(".stopCard");
+  const container = newCard.parentElement;
+
+  // usuń stare karty profili (karta "Nowy" nie ma data-id, więc zostaje)
+  container.querySelectorAll(".stopCard[data-id]").forEach(card => card.remove());
+
+  state.profiles.forEach(profile => {
+    const card = document.createElement("div");
+    card.className = "stopCard";
+    card.dataset.id = profile.id;
+    card.innerHTML = `
+      <div class="upper">
+        <span class="stopName"></span>
+      </div>
+      <div class="center">
+        <i class="ti ti-home"></i>
+      </div>
+      <div class="lower">
+        <span class="lines"></span>
+        <div class="controls">
+          <button class="editStopCard">Edytuj</button>
+          <button class="deleteStopCard">Usuń</button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector(".stopName").textContent = profile.name;
+    card.querySelector(".lines").textContent = (profile.lines || []).map(l => l.line).join(", ");
+
+    card.querySelector(".editStopCard").addEventListener("click", () => {
+      openEditDialog(profile);
+    });
+
+    card.querySelector(".deleteStopCard").addEventListener("click", () => {
+      if (!confirm(`Usunąć przystanek "${profile.name}"?`)) return;
+
+      state.profiles = state.profiles.filter(p => p.id !== profile.id);
+
+      // jeśli usunięty był aktywny, przełącz na pierwszy z pozostałych (albo null)
+      if (state.activeId === profile.id) {
+        state.activeId = state.profiles.length ? state.profiles[0].id : null;
+      }
+
+      saveState(state);
+      renderStopCards();
+      loadProfiles();
+    });
+
+    container.insertBefore(card, newCard);
+  });
+}
+
+
 
 
 // start
+renderStopCards();
 loadProfiles();
 loadCurTime();
 loadStopNames();

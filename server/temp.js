@@ -76,3 +76,83 @@ let data = {
         }
     }
 }
+
+
+document.querySelector("#startStopInput").addEventListener("change", (e) => {
+  loadRoutes(e.target.value);
+});
+
+
+async function loadRoutes(stopName) {
+  const routeListDiv = document.querySelector("#destinationGroups");
+  routeListDiv.innerHTML = "";   // wyczyść poprzednie grupy
+
+  if (!stopName) return;
+
+  try {
+    const response = await fetch(`/api/stops/routes?name=${encodeURIComponent(stopName)}`);
+    if (!response.ok) throw new Error(`Błąd HTTP: ${response.status}`);
+
+    const routes = await response.json();
+    //routeListDiv.innerHTML=JSON.stringify(routes);
+    routes.forEach(stop => {
+      let fieldset = document.createElement("fieldset")
+      fieldset.classList = "destGroup";
+      fieldset.id = stop.stop_id;
+
+      let legend = document.createElement("legend")
+      stop.headsigns.forEach(headsign => {
+        legend.textContent += `${headsign}, `;
+      })
+      legend.textContent.slice(0,-3);
+
+      stop.lines.forEach(line => {
+        let label = document.createElement("label");
+        label.textContent = line;
+
+        let checkbox = document.createElement("input");
+        checkbox.type="checkbox";
+        checkbox.value=line;
+        checkbox.checked = 1;
+        label.appendChild(checkbox);
+        fieldset.appendChild(label);
+      });
+      fieldset.appendChild(legend)
+      routeListDiv.appendChild(fieldset)
+    });
+  } catch (err) {
+    console.error("Błąd funkcji loadRoutes:", err);
+  }
+}
+
+
+
+
+const response = await fetch(`/api/stops/routes?name=${encodeURIComponent(stopName)}`);
+    if (!response.ok) throw new Error(`Błąd HTTP: ${response.status}`);
+
+    const lines = await response.json();
+
+    lines.forEach(l => {
+      const details = document.createElement("details");
+      details.className = "lineGroup";
+      details.dataset.line = l.line;
+
+      const summary = document.createElement("summary");
+      summary.textContent = l.line;
+      details.appendChild(summary);
+
+      l.headsigns.forEach(headsign => {
+        const label = document.createElement("label");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = headsign;
+        checkbox.checked = true;
+
+        label.appendChild(checkbox);
+        label.append(` ${headsign}`);
+        details.appendChild(label);
+      });
+
+      routeListDiv.appendChild(details);
