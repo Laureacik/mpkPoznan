@@ -173,7 +173,9 @@ div.time h1 span.hidden-colon {
 }
 
 
-
+main{
+  margin-bottom: 6.5em;
+}
 
 
 div.departureCard {
@@ -181,6 +183,10 @@ div.departureCard {
   margin: 1em auto;
   border-radius: 2em;
   box-shadow: rgba(149, 157, 165, 0.4) 0px 12px 48px 0px
+}
+
+:has(input[type='checkbox']#hideShadows:checked) div.departureCard {
+  box-shadow: none;
 }
 
 div.departureCard div.upperRow{
@@ -197,6 +203,10 @@ div.departureCard div.lowerRow{
   align-items: center;
   background-color: var(--color2);
   border-radius: 0 0 2em 2em;
+}
+
+:has(input[type='checkbox']#showDetails:checked) div.departureCard div.lowerRow{
+  display: none;
 }
 
 div.departureCard span{
@@ -231,6 +241,7 @@ div.departureCard div.lowerRow span.delayed{
 footer{
   position: fixed;
   bottom: 0;
+  height: 5.5em;
   width: 100vw;
   display: flex;
   flex-direction: row;
@@ -265,9 +276,6 @@ footer div button{
 
   div.departureCard div.upperRow span.endStop{
     display: block;
-  }
-  div.departureCard div.lowerRow{
-    display: none;
   }
 }
 

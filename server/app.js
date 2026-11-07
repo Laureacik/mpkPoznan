@@ -167,6 +167,7 @@ const trackRoute = (profileIndex, stopName, line, course) => {
 };
 
 const getDelay = async (trip, feed) => {
+    //console.log(`Trip: ${trip}`)
     const newFeed = feed.entity
     .map(d => ({
         tripId: d.tripUpdate.trip.tripId,
@@ -180,7 +181,7 @@ const getDelay = async (trip, feed) => {
         stopSeq: d.stopTimeUpdate[0].stopSequence
     }))
     .filter(d => d.stopSeq!=0)
-
+    //console.log(newFeed)
     if (newFeed[0]) return newFeed[0].delay;
     else return 0;
 }
@@ -236,7 +237,6 @@ const showDepartures = async (qty = 5, rows, feed) => {
           headsign: trip.trip_headsign,
           timeToDep: czas(d.departure_time, currentTime, delay),
           depTime: normTime(calcTime(d.departure_time, delay)),
-
           compTime: calcTime(d.departure_time, delay),
           rawTime: d.departure_time,
           delay: delay,

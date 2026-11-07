@@ -119,7 +119,8 @@ async function loadProfiles() {
 
 function renderDepartures() {
   const container = document.querySelector("div.schedule");
-  const header = document.querySelector(".config h1");
+  const header = document.querySelector(".showNavBar h1");
+  let timeStyle = localStorage.getItem("timeStyle")
 
   container.innerHTML = "";
 
@@ -134,15 +135,17 @@ function renderDepartures() {
 
   const departures = profile.departures;
 
-  const timeToDep = (time) => {
-    if (Number(time) > 59) return ">1godz";
-    if (Number(time) === 0) return "Odjazd";
-    return `${time}min`;
+  const timeToDep = (timeToDep, depTime) => {
+    if(timeStyle == 'false') return `${depTime.slice(0,-3)}`;
+    if (Number(timeToDep) > 59) return ">1godz";
+    if (Number(timeToDep) === 0) return "Odjazd";
+    return `${timeToDep}min`;
   };
 
   const isDelayed = (delay) => {
-    if (Number(delay) == 0) return `">Na czas`;
-  return `delayed">Opóźnienie: +${delay} min`;
+    let delayMins = Math.floor(Number(delay)/60)
+    if (delayMins == 0) return `">Na czas`;
+  return `delayed">Opóźnienie: +${delayMins} min`;
   };
 
   departures.forEach(dep => {
@@ -153,7 +156,7 @@ function renderDepartures() {
       <div class="upperRow">
         <span class="line">${dep.routeId}</span>
         <span class="endStop">${dep.headsign}</span>
-        <span class="timeToDep">${timeToDep(dep.timeToDep)}</span>  
+        <span class="timeToDep">${timeToDep(dep.timeToDep, dep.depTime)}</span>  
       </div>
       <div class="lowerRow">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">${svg}</svg>
@@ -163,9 +166,11 @@ function renderDepartures() {
           ${dep.arrTime.slice(0,-3)}
         </span>
         <span class="status${isDelayed(dep.delay)}</span>
-      </div>
-      
+      </div>      
     `;
+    //<hr>
+    //<span>TEST: tmToDep: ${dep.timeToDep} | depTm: ${dep.depTime} | cmpTm: ${dep.compTime} | rwTm: ${dep.rawTime} | dly: ${dep.delay} | arrTm: ${dep.arrTime} </span>
+      
     container.appendChild(card);
   });
 }
@@ -191,7 +196,7 @@ const body = document.querySelector("body");
 const btnLeft = document.querySelector("button.left");
 const btnRight = document.querySelector("button.right");
 const btnCfg = document.querySelector("button.config")
-const btnDayNight = document.querySelector("button.daynight");
+
 
 
 btnLeft.addEventListener("click", () => {
@@ -207,14 +212,7 @@ btnRight.addEventListener("click", () => {
 });
 
 
-if (localStorage.getItem("theme") === "dark") {
-  body.classList.add("dark-mode");
-}
 
-btnDayNight.addEventListener("click", () => {
-  const isDark = body.classList.toggle("dark-mode");
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-});
 
 
 
@@ -450,6 +448,25 @@ function renderStopCards() {
     container.insertBefore(card, newCard);
   });
 }
+
+
+const hideNavBar = document.querySelector("input#hideNavBar");
+const changeTimeStyle = document.querySelector("input#changeTimeStyle")
+const changeDarkMode = document.querySelector("input#changeDarkMode")
+
+changeTimeStyle.addEventListener("change", () => {
+  localStorage.setItem("timeStyle", changeTimeStyle.checked);
+  console.log(localStorage.getItem("timeStyle"))
+  renderDepartures();
+})
+
+if (localStorage.getItem("theme") === "dark") {
+  body.classList.add("dark-mode");
+}
+changeDarkMode.addEventListener("change", () => {
+  const isDark = body.classList.toggle("dark-mode");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+})
 
 
 

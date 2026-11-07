@@ -12,3 +12,4 @@
 14,"Urząd Gminy Dopiewo","http://www.dopiewo.pl","Europe/Warsaw","","pl"
 15,"Przedsiębiorstwo Usług Komunalnych sp. z o.o. w Mosinie","https://pukmosina.pl/","Europe/Warsaw","+48 61 8132-337","pl"
 16,"Przedsiębiorstwo Komunikacji Samochodowej w Poznaniu Spółka Akcyjna","https://pks.poznan.pl/","Europe/Warsaw","","pl"
+17,"Urząd Miasta i Gminy Murowana Goślina","https://www.murowana-goslina.pl/","Europe/Warsaw","61 8923 600","pl"

@@ -7,11 +7,15 @@ const {
 } = require("./app");
 
 const {
+  downloadGtfs,
   downloadRT,
   stopsData,
   stopTimesData,
-  tripsData
+  tripsData,
+  reloadGtfsData
 } = require("./data");
+
+
 
 const app = express();
 const PORT = 3000;
@@ -180,7 +184,8 @@ app.get("/api/time", (req, res) => {
 // ===============================
 // START SERWERA
 // ===============================
-
+//downloadGtfs();
+reloadGtfsData();
 app.listen(PORT, () => {
   console.log(`Serwer działa na http://localhost:${PORT}`);
 });

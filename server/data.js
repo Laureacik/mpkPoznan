@@ -10,12 +10,17 @@ const { promisify } = require("util");
 
 const execFileAsync = promisify(execFile);
 
+let giveDate = () =>{
+  const d = new Date();
+  return ` ${d.toJSON()}`;
+}
+
 async function downloadGtfs() {
   const url = "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGTFSFile";
   const zipPath = "GTFS.zip";
   const outputDir = "server/dynamicGTFS";
 
-  console.log("Pobieranie aktualnego GTFS...");
+  console.log("Pobieranie aktualnego GTFS..." + giveDate());
 
   try {
     await execFileAsync("curl", [
@@ -26,24 +31,24 @@ async function downloadGtfs() {
       url
     ]);
 
-    console.log("GTFS pobrany.");
+    console.log("GTFS pobrany." + giveDate());
 
     const zip = new AdmZip(zipPath);
     zip.extractAllTo(outputDir, true);
 
     fs.unlinkSync(zipPath);
 
-    console.log("GTFS zaktualizowany.");
+    console.log("GTFS zaktualizowany." + giveDate());
 
   } catch (err) {
-    console.error("Błąd pobierania GTFS:", err.message);
+    console.error("Błąd pobierania GTFS:", err.message + giveDate());
   }
 }
 
 async function downloadRT() {
   const url = "https://www.ztm.poznan.pl/pl/dla-deweloperow/getGtfsRtFile?file=trip_updates.pb"
   
-  console.log("Pobieranie aktualnych danych RT...");
+  console.log("Pobieranie aktualnych danych RT..." + giveDate());
   
   const res = await fetch(url)
   const buf = await res.arrayBuffer();
@@ -51,7 +56,7 @@ async function downloadRT() {
   const feed = gtfsrt.transit_realtime.FeedMessage.decode(
     new Uint8Array(buf)
   )
-  console.log("Dane RT pobrane")
+  console.log("Dane RT pobrane" + giveDate())
   return feed;
 }
 
@@ -71,7 +76,7 @@ let calendarData = parseCsv(fs.readFileSync(`${dir}/calendar.txt`, "utf8"));
 
 
 function reloadGtfsData() {
-  console.log("Wczytywanie nowych danych GTFS...");
+  console.log("Wczytywanie nowych danych GTFS..." + giveDate());
 
   stopsData = parseCsv(fs.readFileSync(`${dir}/stops.txt`, "utf8"));
   stopTimesData = parseCsv(fs.readFileSync(`${dir}/stop_times.txt`, "utf8"));
@@ -79,7 +84,7 @@ function reloadGtfsData() {
   tripsData = parseCsv(fs.readFileSync(`${dir}/trips.txt`, "utf8"));
   calendarData = parseCsv(fs.readFileSync(`${dir}/calendar.txt`, "utf8"));
 
-  console.log("Dane GTFS przeładowane.");
+  console.log("Dane GTFS przeładowane." + giveDate());
 }
 
 module.exports = {
